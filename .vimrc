@@ -1,18 +1,42 @@
 " File: .vimrc
-" Maintainerr: 
-" Last Change: 14-Jul-2012.
+" Maintainerr: wiredool
+" Last Change: 29-Nov-2012.
+" win 32/64 kaoriya gvim without _(g)vimrc
+" linux 32/64 distory-package 7.2 or bulid
+
+" Environmental {{{
+" let $LANG = 'ja_JP'
+" let $LANG = 'en_US'
+"
+" chek for reload
+if $UTILSPATH == ''
+  let SEP = has('win32') || has('win64') ? ';' : ':'
+
+  let $MYBUNDLE = expand('~/.vim/bundle')
+
+  " for windows
+  let $UTILSPATH .= $HOME . '/.vim/opt/' . SEP
+  let $UTILSPATH .= $HOME . '/.vim/opt/curl' . SEP " XXX
+  let $UTILSPATH .= $HOME . '/local/lib/curl-7.25.0-ssh2-ssl-sspi-zlib-static-bin-w32' . SEP
+  let $UTILSPATH .= $HOME . '/local/lib/ImageMagick-6.7.9-0' . SEP
+  let $PATH = expand($UTILSPATH) . $PATH
+endif
+
+" /Environmental }}}
 
 " Encoding {{{
-" use utf-8 encoding, priority utf-8 > cp932
-" fileencoidings utf-8 is spesial, if equal encoding but check next
-set fileencodings=iso-2022-jp-3,iso-2022-jp,euc-jisx0213,euc-jp,ucs-bom,eucjp-ms,utf-8,cp932
+" utf-8 > cp932
+set fileencodings=ucs-bom,utf-8,cp932,euc-jp
 if &encoding !=? 'utf-8'
+\  || has('win32')
+\  || has('win64')
   let &termencoding = &encoding
   set encoding=utf-8
+  let &runtimepath=iconv(&runtimepath, &termencoding, 'utf-8') " fix japanese path
 endif
 " after set encoding
 scriptencoding utf-8
-" /encoding }}}
+" /Encoding }}}
 
 " Options {{{
 " disable ime at start
@@ -25,11 +49,15 @@ set history=512
 set virtualedit=block
 " show match bracket
 set showmatch
-" tag is lower-case to avoid duplicate
+" tag is lower-case
 set tags=./tags,tags
 " swap-file create to one directory
 " name is %path%to%file.swp
 set directory^=$HOME/.vim/swap//
+" call s:mkdir('$HOME/.vim/swap')
+" nam format
+set nrformats=hex
+
 " tab
 " display tab level width
 set tabstop=4
@@ -39,6 +67,7 @@ set shiftwidth=2
 set softtabstop=2
 " tabkey insert space only
 set expandtab
+
 " display
 " show special chars
 set list listchars=tab:^\ ,trail:_,extends:>,precedes:<
@@ -51,13 +80,15 @@ set sidescroll=8 sidescrolloff=8
 set foldcolumn=2 foldmethod=marker
 " always show statusline
 set laststatus=2
-" ex line height
+" ex commandline height
 set cmdheight=2
 " show visual selection info
 set showcmd
 " show line info
 set ruler
 " set statusline=%!MyStatusLine()
+" cursorline highlight
+" set cursorline
 " complete
 set wildmenu
 " search
@@ -67,6 +98,7 @@ set ignorecase smartcase
 set incsearch
 " disable wrap saerch
 set nowrapscan
+
 " gui
 " enable gui window title
 set title
@@ -79,114 +111,130 @@ set guioptions-=r
 set guioptions-=L
 " copy selection only modal
 set guioptions+=A
-" /options }}}
+" /Options }}}
 
 " Autocmd reset {{{
 augroup myrc
   autocmd!
 augroup END
-" /autocmd reset }}}
-
-" Environmental {{{
-" let $LANG = 'ja_JP'
-" let $LANG = 'en_US'
-if $UTILSPATH == ''
-  let $UTILSPATH = expand('$HOME') . '\local\lib\curl-7.25.0-ssh2-ssl-sspi-zlib-static-bin-w32'
-  " let $UTILSPATH .= expand('$HOME') . '
-  let $PATH = $UTILSPATH . ';' . $PATH " XXX: win only
-endif
-if $MYBUNDLE == ''
-  let $MYBUNDLE = expand('~/.vim/bundle')
-endif
-" /environmental }}}
+" /Autocmd reset }}}
 
 " Bundle {{{
-" disable ditect, plugin and indent for loading.
+" reset did_load_filetypes for enable plugin's ftdetect
 filetype off
-filetype plugin indent off
 if has('vim_starting')
-  let g:neobundle_default_git_protocol = 'git+https'
-  " let &runtimepath .= ',' . expand('$MYBUNDLE') . '/neobundle.vim'
+  let g:neobundle#log_filename = $HOME . "/.vim/.neobundle.log"
+  let g:neobundle#types#git#default_protocol = 'git' " 'git', 'https' or 'git+https'. 'git+https' is clone only.
+  "let g:neobundle#types#hg#default_protocol = 'git'
+  "let g:neobundle_default_git_protocol = 'git' " old name
+  "let g:neobundle#default_options = { " not work, 'git not installed'
+  "\     '_': { 'type': 'hg'}
+  "\}
   set runtimepath+=$MYBUNDLE/neobundle.vim
-  call neobundle#rc(expand('$MYBUNDLE'))
+  call neobundle#rc($MYBUNDLE)
 endif
 
 " management self
-NeoBundle 'Shougo/neobundle.vim', {'type': 'hg'}  " plugin manager
-" NeoBundle 'wiredool/neobundle.vim', {'type': 'hg'} " plugin manager
+NeoBundle 'Shougo/neobundle.vim', {'type': 'hg', 'stay_some': 1}  " plugin manager
+"NeoBundle 'wiredool/neobundle.vim', {'type': 'hg'} " plugin manager
 
 " util
-NeoBundle 'tyru/restart.vim', {'type': 'hg'} " exit and start vim
+NeoBundle 'tyru/restart.vim', {'type': 'hg'} " exit and start vim, gui only
 NeoBundle 'thinca/vim-quickrun', {'type': 'hg'} " run script
-NeoBundle 'mattn/webapi-vim', {'type': 'hg'} " web utils
-" NeoBundle 'Shougo/vimproc', {'type': 'hg'} " multi process
-" NeoBundle 'Shougo/vimshell', {'type': 'hg'} " shell
+NeoBundle 'vim-jp/vital.vim', {'type': 'hg'}  " vim script utils
+NeoBundle 'Shougo/vimproc', {'type': 'hg', 'stay_some': 1} " multi process
+NeoBundle 'Shougo/vimshell', {'type': 'hg'} " shell
 " NeoBundle 'Shougo/vimfiler', {'type': 'hg'} " filer
-NeoBundle 'kien/ctrlp.vim', {'type': 'hg'} " selecter
 NeoBundle 'Shougo/unite.vim', {'type': 'hg'} " selecter
 NeoBundle 'h1mesuke/unite-outline', {'type': 'hg'} " outline
-" NeoBundleLazy 'ujihisa/vital.vim', {'type': 'hg'}  " vim script utils
-" NeoBundleLazy 'mattn/benchvimrc-vim' ,{'type' : 'hg'} " benchmark vimrc
+NeoBundle 'kien/ctrlp.vim', {'type': 'hg'} " selecter
+NeoBundle 'osyo-manga/shabadou.vim', {'type': 'hg'} " syntax check
+NeoBundle 'osyo-manga/unite-quickfix', {'type': 'hg'}
+NeoBundle 'osyo-manga/vim-watchdogs', {'type': 'hg'} " syntax check
+NeoBundle 'kana/vim-fakeclip', {'type': 'hg'} " clip bord
+NeoBundle 'kana/vim-altr', {'type': 'hg'}
+NeoBundle 'mattn/ctrlp-launcher', {'type': 'hg'}
+
 " user's textobject
 NeoBundle 'kana/vim-textobj-user', {'type': 'hg'} " obuject util
 NeoBundle 'kana/vim-gf-user', {'type': 'hg'} " jump
 
-" clipbord
-" NeoBundle 'kana/vim-fakeclip', {'type': 'hg'} " clip bord
-"
-" Vim script test framework
-" NeoBundleLazy 'kana/vim-vspec', {'type': 'hg'} " test
-NeoBundle 'tyru/simpletap.vim', {'type': 'hg'} " test
-
-" NeoBundle 'nathanaelkane/vim-indent-guides', {'type': 'hg'} " show indent
-" NeoBundle 'LeafCage/foldCC', {'type': 'hg'} " folding
-NeoBundle 'basyura/TweetVim', {'type': 'hg'} " twitter client
-NeoBundle 'basyura/twibill.vim', {'type': 'hg'} " twitter api wapper, edit: without python
+" web
+NeoBundle 'mattn/webapi-vim', {'type': 'hg'} " web utils
+NeoBundle 'mattn/wwwrenderer-vim', {'type': 'hg'} " show webpage
+NeoBundle 'thinca/vim-ref', {'type': 'hg'} " show document
+"NeoBundle 'basyura/TweetVim', {'type': 'hg'} " twitter client
+"NeoBundle 'basyura/twibill.vim', {'type': 'hg'} " twitter api wapper, edit: without python
 NeoBundle 'tyru/open-browser.vim', {'type': 'hg'} " open webbrowser
-" NeoBundle 'tsukke/lingr-vim', {'type': 'hg'} " lingr client
+"NeoBundle 'tsukkee/lingr-vim', {'type': 'hg'} " lingr client, python
 
 " imput
 NeoBundle 'tyru/eskk.vim', {'type': 'hg'} " Japanese imput method
 NeoBundle 'tyru/caw.vim', {'type': 'hg'} " comment
 NeoBundle 'Shougo/neocomplcache', {'type': 'hg'} " complite
-NeoBundle 'kana/vim-smartchr', {'type': 'hg'} " replace input char
+NeoBundle 'Shougo/neosnippet',    {'type': 'hg'}
+" NeoBundle 'kana/vim-smartchr', {'type': 'hg'} " replace input char
 
 " for langage
-" orignal 'derekwyatf/vim-scala'
-NeoBundleLazy 'ujihisa/vim-scala', {'type': 'hg'} " support scala
-" NeoBundleLazy 'ujihisa/shadow.vim', {'type': 'hg'} "
+"NeoBundleLazy 'ujihisa/vim-scala', {'type': 'hg'} " support scala
+"NeoBundleLazy 'ujihisa/shadow.vim', {'type': 'hg'} "
 NeoBundle 'mattn/zencoding-vim', {'type': 'hg'} " support html/css
-" NeoBundle 'othree/html5.vim' " html/css/js syntax
-NeoBundle 'hail2u/vim-css3-syntax', {'type': 'hg'} " css3 syntax
+"NeoBundle 'othree/html5.vim' " html/css/js syntax
+"NeoBundle 'hail2u/vim-css3-syntax', {'type': 'hg'} " css3 syntax
 NeoBundle 'teramako/jscomplete-vim', {'type': 'hg'} " support javascript
-NeoBundle 'jsx/jsx', {'type': 'hg'} " support javascript
-" NeoBundleLazy 'mattn/vdbi-vim', {'type': 'hg'}  " support sql (use parl)
-" NeoBundleLazy 'Shougo/vinarise', {'type': 'hg'} " binary editer (use python)
+"NeoBundle 'jsx/JSX', {'type': 'hg'} " support javascript
+"NeoBundleLazy 'mattn/vdbi-vim', {'type': 'hg'}  " support sql (use parl)
+"NeoBundleLazy 'Shougo/vinarise', {'type': 'hg'} " binary editer (use python)
+"NeoBundle 'koron/java-helper-vim', {'type': 'hg'} " java omni-founcion
+set runtimepath+=$GOROOT/misc/vim
 
 " presentation
-NeoBundle 'thinca/vim-ref', {'type': 'hg'} " show document
-NeoBundle 'mattn/wwwrenderer-vim', {'type': 'hg'} " show webpage
 NeoBundle 'h1mesuke/vim-alignta', {'type': 'hg'} " multibyte align
+NeoBundle 'thinca/vim-prettyprint', {'type': 'hg'} " printlnEx
 NeoBundleLazy 'thinca/vim-fontzoom', {'type': 'hg'} " resize font
-" NeoBundleLazy 'thinca/vim-showtime', {'type': 'hg'} " is's showtime
-" NeoBundleLazy 'thinca/vim-prettyprint', {'type': 'hg'} " printlnEx
+NeoBundleLazy 'thinca/vim-showtime', {'type': 'hg'} " it's showtime
+NeoBundle 't9md/vim-quickhl', {'type': 'hg'} " hi
+" NeoBundle 'nathanaelkane/vim-indent-guides', {'type': 'hg'} " show indent
+" NeoBundle 'LeafCage/foldCC', {'type': 'hg'} " folding
 
 " color scehme
-NeoBundle 'Zenburn', {'type': 'hg'}
-" NeoBundleLazy 'altercation/vim-colors-solarized', {'type': 'hg'}
+NeoBundle 'vim-scripts/Zenburn', {'type': 'hg'}
+NeoBundleLazy 'altercation/vim-colors-solarized', {'type': 'hg'}
 
-" enable detect, plugin and indent.
+" Vim script test framework
+"NeoBundleLazy 'kana/vim-vspec', {'type': 'hg'} " test
+"NeoBundleLazy 'tyru/simpletap.vim', {'type': 'hg'} " test
+"NeoBundleLazy 'Shougo/vesting', {'type': 'hg'} " test
+"NeoBundleLazy 'kannokanno/vimtest', {'type': 'hg'} " test
+
+" sample code
+NeoBundleLazy 'mattn/hahhah-vim', {'type': 'hg'}
+NeoBundleLazy 'mattn/unite-macdonalds-vim', {'type': 'hg'}
+NeoBundleLazy 'mattn/ctrlp-macdonald', {'type': 'hg'}
+NeoBundleLazy 'osyo-manga/unite-moo', {'type': 'hg'}
+NeoBundleLazy 'osyo-manga/unite-sl', {'type': 'hg'}
+NeoBundleLazy 'osyo-manga/unite-u-nya-', {'type': 'hg'}
+NeoBundleLazy 'osyo-manga/vim-homo-statusline', {'type': 'hg'}
+NeoBundleLazy 'koron/homoo-vim', {'type': 'hg'}
+NeoBundleLazy 'koron/u-nya-vim', {'type': 'hg'}
+NeoBundleLazy 'koron/nyancat-vim', {'type': 'hg'}
+NeoBundleLazy 'tyru/banban.vim', {'type': 'hg'}
+
+" vimrc status
+NeoBundleLazy 'mattn/benchvimrc-vim', {'type': 'hg'} " benchmark vimrc
+NeoBundleLazy 'thinca/vim-scouter', {'type': 'hg'} " show vim power
+
+" enable ftdetect, plugin and indent.
 filetype plugin indent on
-" /bundle }}}
+" /Bundle }}}
 
 " Plugin settings {{{
 
 " eskk.vim {{{
-"
 let g:eskk#large_dictionary = {
-\	'path': expand('$HOME') . '/.eskk/dict/SKK-JISYO.L',
+\	'path': expand('$HOME') . '/.vim/opt_file/SKK-JISYO.UTF-8.L',
 \	'sorted': 1,
-\	'encoding': 'euc-jp'
+\	'encoding': 'utf-8'
 \}
 
 autocmd myrc User eskk-initialize-pre call s:eskk_initial_pre()
@@ -201,6 +249,8 @@ function! s:eskk_initial_pre()
   call t.add_map('h ', ' ')
   call t.add_map('h:', ':')
   call t.add_map('h;', ';')
+  call t.add_map('h[', '[')
+  call t.add_map('h]', ']')
   call t.add_map('(', '(')
   call t.add_map(')', ')')
   call eskk#register_mode_table('hira', t)
@@ -218,29 +268,21 @@ let g:ref_source_webdict_sites = {
 \		'url': 'http://ja.wikipedia.org/wiki/%s',
 \		'keyword_encoding': 'utf-8',
 \		'cache': 0,
-\	},
-\	'alc': {
-\		'url': 'http://eow.alc.co.jp/search?q=%s',
-\		'keyword_encoding': 'utf-8',
-\		'cache': 0,
-\	},
+\	}
 \}
 
 let g:ref_phpmanual_path = expand('$HOME') . '\local\share\php_manual_ja\php-chunked-xhtml'
 
-function! g:ref_source_webdict_sites.alc.filter(output)
-  return "aaaaaaaaaaaaaaaaaa"
-  "return join(split(a:output, "\n")[33 :], "\n")
-endfunction
 " }}}
 
 " zen-coding {{{
+" from mattn's blog (http://mattn.kaoriya.net/software/vim/20120613184721.htm)
 let g:user_zen_settings ={
 \  'lang': 'ja',
 \  'indentation': '  ',
 \  'html' : {
 \    'filters' : 'html',
-\    'snipets' : {
+\    'snippets' : {
 \      'jq' : "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery.min.js\">\n</srcipt>\n<script>\n\\$(function() {\n\t|\n})()\n</script>",
 \      'cd' : "<![CDATA[|]]>",
 \    },
@@ -279,83 +321,173 @@ for path in split(glob($VIM.'/plugins/*'), '\n')
 endfor
 " }}}
 
-" /plugins }}}
+" altr-vim {{{
+call altr#define(
+\ 'plugin/%.vim',
+\ 'autoload/%.vim',
+\ 'doc/%.jax',
+\ 'doc/%.txt'
+\)
+" TODO; define rule
+" }}}
+
+" /Plugins }}}
 
 " Settings {{{
 autocmd myrc FileType help setlocal foldcolumn=1 sidescrolloff=0
-" /settings }}}
+" /Settings }}}
 
-" Statusline {{{
-function! MyStatusLine()
-  let line =''
-  return line
+" Command {{{
+
+" change encode {{{
+command! -bang -nargs=? Utf8 edit<bang> ++enc=utf-8 <args>
+command! -bang -nargs=? Sjis edit<bang> ++enc=sjis <args>
+
+" from thinca's vimrc https://gist.github.com/3666285
+" make directory
+function! s:mkdir(file, ...)
+  let f = a:0 ? fnamemodify(a:file, a:1) : a:file
+  if !isdirectory(f)
+    call mkdir(f, 'p')
+  endif
 endfunction
-" /statusline }}}
+augroup vimrc
+  autocmd BufWritePre * call s:auto_mkdir(expand('<afile>:p:h'), v:cmdbang)
+  function! s:auto_mkdir(dir, force)
+    let mes = '"%s" does not exist. Create? [y/N]'
+    if !isdirectory(a:dir) && (a:force ||
+    \    input(printf(mes, a:dir)) =~? '^y\%[es]$')
+      call s:mkdir(a:dir)
+    endif
+  endfunction
+augroup END
+" }}}
+
+" my neobundle wrapper {{{
+command! NeoBundool call s:neobundool()
+function! s:neobundool()
+endfunction
+" }}}
+
+" /Command }}}
 
 " Keymap {{{
 " q is quit
 nnoremap q <Nop>
 nnoremap Q q
 
+" easy typing
+nnoremap : ;
+nnoremap ; :
+inoremap jj <Esc>
+nnoremap Y y$
+
 " for help
 autocmd myrc FileType help nnoremap <buffer> q <C-w>c
 nnoremap <C-h> :<C-u>help<Space>
 
-" easy to type
-nnoremap : ;
-nnoremap ; :
-inoremap jj <Esc>
-inoremap <expr> = smartchr#loop('=', ' = ', '==', '===')
-cnoremap <expr> / smartchr#loop('/', '~/', '//', '///')
-" edit vimrc
-nnoremap <Space> <Nop>
-nnoremap <Space>ee :<C-u>edit $MYVIMRC<CR>
-nnoremap <Space>eg :<C-u>edit $MYGVIMRC<CR>
-" restart
-nnoremap <Space>re :<C-u>:Restart<CR>
-nnoremap <Space>re<Esc> <Nop>
-" text worp
-nnoremap <Space>w :<C-u>set wrap!<CR>
-" saerch wrap
-nnoremap <Space>W :<C-u>set wrapscan!<CR>
-" number
-nnoremap <Space>n :<C-u>set number!<CR>
-nnoremap <Space>N :<C-u>set relativenumber!<CR>
+" search with move center(zz) and open fold(zv)
+nnoremap n nzzzv
+nnoremap N Nzzzv
+nnoremap * *zzzv
+nnoremap # #zzzv
+nnoremap g* g*zzzv
+nnoremap g# g#zzzv
+
 " zen
 "inoremap <C-e> <Nop>
 let g:user_zen_expandabbr_key = '<C-e>'
-" open dir (win only)
-nnoremap <Space>ex :<C-u>!explorer.exe .<CR>
-" /map }}}
+" paste from clipbord
+inoremap <C-r>* <C-o>:set paste<CR><C-r>*<C-o>:set nopaste<CR>
+" omni completion
+inoremap <C-Space> <C-x><C-o>
+
+nmap \p <Plug>(altr-back)
+nmap \n <Plug>(altr-forward)
+
+cnoremap <C-Space> <C-d>
+
+" prefix
+nnoremap <Space> <Nop>
+
+" edit vimrc
+nnoremap <Space>ee :<C-u>edit $MYVIMRC<CR>
+nnoremap <Space>eg :<C-u>edit $MYGVIMRC<CR>
+" restart
+nnoremap <Space>re :<C-u>Restart<CR>
+
+" white space
+nnoremap <Space>i i<Space><Esc>
+nnoremap <Space>a a<Space><Esc>
+nnoremap <Space>o o<Esc>
+nnoremap <Space>O O<Esc>
+
+" neobundle
+nnoremap <Space>b :<C-u>edit $MYBUNDLE/<C-d>
+nnoremap <Space>B :<C-u>NeoBundle<C-d>
+
+" toggle
+" text wrap
+nnoremap <Space>w :<C-u>set wrap!<CR>
+" saerch wrap
+nnoremap <Space>W :<C-u>set wrapscan!<CR>
+" line number
+nnoremap <Space>n :<C-u>set number!<CR>
+nnoremap <Space>N :<C-u>setlocal relativenumber!<CR>
+" tab
+nnoremap <Space>t :<C-u>setlocal expandtab!<CR>
+" hilight
+nmap <Space>h <Plug>(quickhl#toggle)
+
+" /Map }}}
+
+" Statusline {{{
+function! MyStatusLine()
+  let line =''
+  return line
+endfunction
+" /Statusline }}}
 
 " Color scehme {{{
-" for 256color
-if $COLORTERM == 'gnome-terminal'
-  set t_Co=256
-endif
+augroup vimrc
+  autocmd ColorScheme * call s:onColorScheme()
+augroup END
+function! s:onColorScheme()
+  " in overwrite, '!' is required.
+  " disable italic
+  highlight! Comment gui=NONE
+  " NonText eol, extends, recedes
+  highlight! link NonText Error
+  " SpecialKey nbsp, tab, trail
+  "highlight! link SpecialKey Error
+endfunction
+
+set t_Co=256
 syntax enable
 set background=dark
 colorscheme zenburn
-" disable italic
-highlight Comment gui=NONE
-" for listchars
-highlight link  NonText Error
-highlight link  SpecialKey Error
-" /color scehme }}}
+" /Color scehme }}}
 
-" memo {{{
+" Memo {{{
 " option
 " set foo=$BAR/baz                   " not space
-" let &foo = expand('$BAR') . '/baz' " space ok, option use &
+" let &foo = expand('$BAR') . '/baz' " space ok
 "
 " statuslineitem
 " %[-][0][minwid][.maxwid]{item}
 " space '\ '
 "
 " hg
-" :s@\(^\s*NeoBundle\s\+'[^']*'\)\s*\(.*$\)@\1, {'type': 'hg'} \2@g
-" :s@\(^\s*NeoBundle\s\+'[^']*'\)\s*,\s*{\s*'type'\s*:\s*'hg'\s*}\s*\(.*$\)@\1 \2@g
-" /memo }}}
+" :s@\(^\s*NeoBundle\%[Lazy]\s\+'[^']*'\)\s*\(.*$\)@\1, {'type': 'hg'} \2@g
+" :s@\(^\s*NeoBundle\%[Lazy]\s\+'[^']*'\)\s*,\s*{\s*'type'\s*:\s*'hg'\s*}\s*\(.*$\)@\1 \2@g
+" /Memo }}}
 
+" PR {{{
+" Vim Advent Calendar 2012
+" http://atnd.org/events/33746
+
+" Vimperator Advent Calendar 2012
+" http://atnd.org/events/34070
+" /PR }}}
+"
 " vim: foldmethod=marker
-
