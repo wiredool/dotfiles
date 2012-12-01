@@ -209,8 +209,8 @@ NeoBundleLazy 'altercation/vim-colors-solarized', {'type': 'hg'}
 
 " sample code
 NeoBundleLazy 'mattn/hahhah-vim', {'type': 'hg'}
-NeoBundleLazy 'mattn/unite-macdonalds-vim', {'type': 'hg'}
-NeoBundleLazy 'mattn/ctrlp-macdonald', {'type': 'hg'}
+NeoBundleLazy 'mattn/unite-mcdonalds-vim', {'type': 'hg'}
+NeoBundleLazy 'mattn/ctrlp-mcdonald', {'type': 'hg'}
 NeoBundleLazy 'osyo-manga/unite-moo', {'type': 'hg'}
 NeoBundleLazy 'osyo-manga/unite-sl', {'type': 'hg'}
 NeoBundleLazy 'osyo-manga/unite-u-nya-', {'type': 'hg'}
