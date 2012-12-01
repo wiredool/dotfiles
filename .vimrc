@@ -1,6 +1,6 @@
 " File: .vimrc
 " Maintainerr: wiredool
-" Last Change: 29-Nov-2012.
+" Last Change: 01-Dec-2012.
 " win 32/64 kaoriya gvim without _(g)vimrc
 " linux 32/64 distory-package 7.2 or bulid
 
@@ -223,6 +223,16 @@ NeoBundleLazy 'tyru/banban.vim', {'type': 'hg'}
 " vimrc status
 NeoBundleLazy 'mattn/benchvimrc-vim', {'type': 'hg'} " benchmark vimrc
 NeoBundleLazy 'thinca/vim-scouter', {'type': 'hg'} " show vim power
+
+" TokyoVim user's result.
+NeoBundle 'thinca/vim-scall', {'type': 'hg'} " Calls a script local function readily.
+NeoBundle 'daisuzu/rainbowcyclone.vim', {'type': 'hg'} " sarch word highlight
+" :RC?Neo
+" :RC?Bundle
+" :RC/List
+"
+" :RCList
+" :RC
 
 " enable ftdetect, plugin and indent.
 filetype plugin indent on
